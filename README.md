@@ -1,9 +1,13 @@
 # Complotto24
 
-Repository sorgente del progetto Complotto24.
+Repository sorgente e registro di versione del progetto Complotto24.
 
-Release corrente: **v0.4.0 BATCH10**.
+Release corrente: **v0.4.1 BATCH10**.
 
-Batch 0.4.0: 10 nuovi articoli su Area 51, UAP/UFO, Terra piatta, Terra cava, scie chimiche e temi complottistici affini. Il pacchetto WordPress installabile completo è archiviato anche nella Libreria ChatGPT `/Complotto24/Builds/`.
+Batch 0.4.1 del 16 agosto 2026: 10 nuovi articoli distribuiti tra Fisco, Tecnologia/PA, Consumatori, Cultura/Turismo, Scuola, Banche, Trasporti, Casa/Energia, Ambiente e Televisione. Mix: 4 Reali, 4 Inventati, 2 Non verificabili. Totale articoli: 60.
 
-Nota operativa: il repository è in fase di bootstrap completo degli asset binari storici; da questa release in avanti versione, contenuti e manifest del batch vengono tracciati su `main`.
+ZIP completo persistente: `/Complotto24/Builds/complotto24-core-v0.4.1-BATCH10.zip`
+
+SHA-256: `ab8fa8946d46cfec4c8da9b9e3e58465ef336bd00d19df6c3a747b740c55f69c`
+
+Nota operativa: finché il bootstrap completo degli asset binari storici non è terminato, la baseline tecnica viene presa dall’ultimo ZIP verificato nella Libreria ChatGPT. GitHub resta il registro di versione, manifest e changelog.
