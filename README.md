@@ -2,12 +2,16 @@
 
 Repository sorgente e registro di versione del progetto Complotto24.
 
-Release corrente: **v0.4.1 BATCH10**.
+Release tecnica corrente: **v0.4.1.4 FULL-IMAGE-REMEDIATION**.
 
-Batch 0.4.1 del 16 agosto 2026: 10 nuovi articoli distribuiti tra Fisco, Tecnologia/PA, Consumatori, Cultura/Turismo, Scuola, Banche, Trasporti, Casa/Energia, Ambiente e Televisione. Mix: 4 Reali, 4 Inventati, 2 Non verificabili. Totale articoli: 60.
+Baseline editoriale: 60 articoli nel dataset JSON, più 6 seed PHP storici. Le bonifiche attive includono MEDIA-HOTFIX, IMAGE-QUALITY-HOTFIX, LEGAL-EDITORIAL-HOTFIX e FULL IMAGE REMEDIATION.
 
-ZIP completo persistente: `/Complotto24/Builds/complotto24-core-v0.4.1-BATCH10.zip`
+Archivio immagini v0.4.1.4: 66 immagini attive, tutte almeno 1600x900; 0 duplicati esatti e 0 near-duplicate con soglia dHash <=14/256. Rimossi 20 asset legacy 1280x720 non più referenziati e corretto un duplicato storico.
 
-SHA-256: `ab8fa8946d46cfec4c8da9b9e3e58465ef336bd00d19df6c3a747b740c55f69c`
+ZIP completo persistente: `/Complotto24/Builds/complotto24-core-v0.4.1.4-FULL-IMAGE-REMEDIATION.zip`
+
+SHA-256: `05353ac84ae47cb1d2e64512bd3ff073388c6e7c74ce10729283575755fb6084`
+
+Manifest release: `releases/v0.4.1.4-FULL-IMAGE-REMEDIATION.md`
 
 Nota operativa: finché il bootstrap completo degli asset binari storici non è terminato, la baseline tecnica viene presa dall’ultimo ZIP verificato nella Libreria ChatGPT. GitHub resta il registro di versione, manifest e changelog.
