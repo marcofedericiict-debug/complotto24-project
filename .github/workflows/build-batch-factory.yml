@@ -42,6 +42,40 @@ jobs:
           $gz.CopyTo($out)
           $out.Close(); $gz.Close(); $in.Close()
 
+      - name: Patch Responses web-search schema
+        shell: pwsh
+        run: |
+          @'
+          from pathlib import Path
+          import re
+
+          p = Path('batch-factory/c24_batch_factory.py')
+          s = p.read_text(encoding='utf-8')
+          before = s
+
+          # OpenAI Responses API requires user_location.type.  The supported
+          # shape is {"type": "approximate", "country": "IT", ...}.
+          patterns = [
+              r'(["\']user_location["\']\s*:\s*\{)(?![^{}]*["\']type["\'])',
+              r'(user_location\s*=\s*\{)(?![^{}]*["\']type["\'])',
+          ]
+          for pattern in patterns:
+              s = re.sub(pattern, r'\1"type": "approximate", ', s)
+
+          if s == before:
+              print('No patch was necessary or source shape already valid.')
+          else:
+              print('Patched user_location with required type=approximate.')
+
+          # Fail the build rather than shipping another EXE with the same API bug.
+          for m in re.finditer(r'user_location\s*[:=]\s*\{([^{}]*)\}', s):
+              body = m.group(1)
+              if 'type' not in body or 'approximate' not in body:
+                  raise SystemExit('Invalid user_location schema still present: ' + m.group(0))
+
+          p.write_text(s, encoding='utf-8')
+          '@ | python -
+
       - name: Install dependencies
         shell: pwsh
         run: |
@@ -52,6 +86,10 @@ jobs:
       - name: Offline self-test
         shell: pwsh
         run: python batch-factory/c24_batch_factory.py --self-test
+
+      - name: Syntax test
+        shell: pwsh
+        run: python -m py_compile batch-factory/c24_batch_factory.py
 
       - name: Build EXE
         shell: pwsh
