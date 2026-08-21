@@ -1,0 +1,109 @@
+name: Build Complotto24 Batch Factory LOCAL v2
+
+on:
+  push:
+    branches:
+      - batch-factory-local-v2-robust
+    paths:
+      - 'batch-factory-local/**'
+      - '.github/workflows/build-batch-factory-local-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build and test Windows EXE
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: batch-factory-local/requirements.txt
+
+      - name: Upgrade packaging tools
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install runtime and build dependencies
+        shell: pwsh
+        run: |
+          python -m pip install -r batch-factory-local/requirements.txt
+          python -m pip install "pyinstaller>=6.10,<7"
+
+      - name: Syntax check
+        shell: pwsh
+        run: |
+          python -m py_compile batch-factory-local/c24_batch_factory_local.py
+
+      - name: Python self-test
+        shell: pwsh
+        env:
+          LOCALAPPDATA: ${{ runner.temp }}\c24-localappdata
+          USERPROFILE: ${{ runner.temp }}\c24-userprofile
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Desktop" | Out-Null
+          python batch-factory-local/c24_batch_factory_local.py --self-test
+
+      - name: Build single-file GUI EXE
+        shell: pwsh
+        run: |
+          python -m PyInstaller `
+            --noconfirm `
+            --clean `
+            --onefile `
+            --windowed `
+            --name "Complotto24-Batch-Factory-LOCAL-v2" `
+            --collect-all certifi `
+            batch-factory-local/c24_batch_factory_local.py
+
+      - name: Verify EXE exists and is PE executable
+        shell: pwsh
+        run: |
+          $exe = "dist\Complotto24-Batch-Factory-LOCAL-v2.exe"
+          if (-not (Test-Path $exe)) { throw "EXE non creato: $exe" }
+          $bytes = [System.IO.File]::ReadAllBytes($exe)
+          if ($bytes.Length -lt 2 -or $bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) { throw "Il file prodotto non e un PE Windows valido" }
+          if ((Get-Item $exe).Length -lt 1000000) { throw "EXE sospettosamente piccolo" }
+
+      - name: EXE self-test
+        shell: pwsh
+        env:
+          LOCALAPPDATA: ${{ runner.temp }}\c24-exe-localappdata
+          USERPROFILE: ${{ runner.temp }}\c24-exe-userprofile
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
+          New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Desktop" | Out-Null
+          $p = Start-Process -FilePath "dist\Complotto24-Batch-Factory-LOCAL-v2.exe" -ArgumentList "--self-test" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Self-test EXE fallito con exit code $($p.ExitCode)" }
+
+      - name: Create distributable package and checksums
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path package | Out-Null
+          Copy-Item "dist\Complotto24-Batch-Factory-LOCAL-v2.exe" package\
+          Copy-Item "batch-factory-local\README.md" package\README.txt
+          $hash = (Get-FileHash "package\Complotto24-Batch-Factory-LOCAL-v2.exe" -Algorithm SHA256).Hash.ToLower()
+          "$hash  Complotto24-Batch-Factory-LOCAL-v2.exe" | Set-Content -Encoding ascii "package\SHA256.txt"
+          $sizeMB = [math]::Round((Get-Item "package\Complotto24-Batch-Factory-LOCAL-v2.exe").Length / 1MB, 2)
+          "BUILD PASS`nEXE size: $sizeMB MB`nSHA256: $hash" | Set-Content -Encoding utf8 "package\BUILD-INFO.txt"
+          Get-Content "package\BUILD-INFO.txt"
+
+      - name: Upload verified Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Complotto24-Batch-Factory-LOCAL-v2-Windows
+          path: package/*
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
