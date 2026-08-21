@@ -31,6 +31,9 @@ Windows desktop app for generating Complotto24 incremental import batches locall
 - Persistent incomplete state allows restart/resume after failure.
 - Detailed logs under `%LOCALAPPDATA%\Complotto24BatchFactory\logs`.
 
+## Windows build verification
+The GitHub Actions Windows pipeline performs Python syntax validation, the internal self-test, PyInstaller one-file GUI compilation, PE header validation, a second self-test executed from the compiled EXE, SHA-256 generation, and artifact publication. The build artifact is published only when every validation step passes.
+
 ## Output
 Default: `%USERPROFILE%\Desktop\Complotto24\Builds`
 
