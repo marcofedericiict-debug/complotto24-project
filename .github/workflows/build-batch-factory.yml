@@ -1,0 +1,73 @@
+name: Build Complotto24 Batch Factory Windows
+
+on:
+  push:
+    branches:
+      - batch-factory-v1
+    paths:
+      - 'batch-factory/**'
+      - '.github/workflows/build-batch-factory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Rebuild Python source
+        shell: pwsh
+        run: |
+          $b64 = Get-Content 'batch-factory/c24_batch_factory.py.gz.b64' -Raw
+          $gzBytes = [Convert]::FromBase64String($b64)
+          [IO.File]::WriteAllBytes('batch-factory/source.gz', $gzBytes)
+          $in = [IO.File]::OpenRead('batch-factory/source.gz')
+          $gz = New-Object IO.Compression.GzipStream($in, [IO.Compression.CompressionMode]::Decompress)
+          $out = [IO.File]::Create('batch-factory/c24_batch_factory.py')
+          $gz.CopyTo($out)
+          $out.Close(); $gz.Close(); $in.Close()
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r batch-factory/requirements.txt
+          pip install pyinstaller
+
+      - name: Offline self-test
+        shell: pwsh
+        run: python batch-factory/c24_batch_factory.py --self-test
+
+      - name: Build EXE
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --onefile --windowed `
+            --name "Complotto24-Batch-Factory" `
+            --collect-all certifi `
+            batch-factory/c24_batch_factory.py
+
+      - name: SHA256
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash "dist/Complotto24-Batch-Factory.exe" -Algorithm SHA256).Hash.ToLower()
+          "SHA256=$hash" | Out-File -Encoding ascii dist/SHA256.txt
+          Write-Host $hash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Complotto24-Batch-Factory-Windows
+          path: |
+            dist/Complotto24-Batch-Factory.exe
+            dist/SHA256.txt
+          if-no-files-found: error
+          retention-days: 30
