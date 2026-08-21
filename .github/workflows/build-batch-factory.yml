@@ -7,6 +7,12 @@ on:
     paths:
       - 'batch-factory/**'
       - '.github/workflows/build-batch-factory.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'batch-factory/**'
+      - '.github/workflows/build-batch-factory.yml'
   workflow_dispatch:
 
 permissions:
