@@ -1,12 +1,6 @@
 name: Build Complotto24 Batch Factory LOCAL v2.0.7
 
 on:
-  push:
-    branches:
-      - batch-factory-local-v2-robust
-    paths:
-      - 'batch-factory-local/**'
-      - '.github/workflows/build-batch-factory-local-v2.yml'
   pull_request:
     branches:
       - main
@@ -21,7 +15,7 @@ permissions:
 jobs:
   build-windows:
     name: Build and test Windows EXE
-    runs-on: windows-latest
+    runs-on: windows-2022
     timeout-minutes: 20
 
     steps:
