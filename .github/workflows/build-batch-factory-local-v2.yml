@@ -1,4 +1,4 @@
-name: Build Complotto24 Batch Factory LOCAL v2.0.5
+name: Build Complotto24 Batch Factory LOCAL v2.0.6
 
 on:
   push:
@@ -51,8 +51,9 @@ jobs:
           python -m py_compile batch-factory-local/c24_batch_factory_local_v203.py
           python -m py_compile batch-factory-local/c24_batch_factory_local_v204.py
           python -m py_compile batch-factory-local/c24_batch_factory_local_v205.py
+          python -m py_compile batch-factory-local/c24_batch_factory_local_v206.py
 
-      - name: Python self-test through v2.0.5 entrypoint
+      - name: Python self-test through v2.0.6 entrypoint
         shell: pwsh
         env:
           LOCALAPPDATA: ${{ runner.temp }}\c24-localappdata
@@ -60,7 +61,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
           New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Desktop" | Out-Null
-          python batch-factory-local/c24_batch_factory_local_v205.py --self-test
+          python batch-factory-local/c24_batch_factory_local_v206.py --self-test
 
       - name: Build single-file GUI EXE
         shell: pwsh
@@ -70,16 +71,16 @@ jobs:
             --clean `
             --onefile `
             --windowed `
-            --name "Complotto24-Batch-Factory-LOCAL-v2.0.5" `
+            --name "Complotto24-Batch-Factory-LOCAL-v2.0.6" `
             --paths batch-factory-local `
             --collect-all certifi `
             --collect-all PIL `
-            batch-factory-local/c24_batch_factory_local_v205.py
+            batch-factory-local/c24_batch_factory_local_v206.py
 
       - name: Verify EXE
         shell: pwsh
         run: |
-          $exe = "dist\Complotto24-Batch-Factory-LOCAL-v2.0.5.exe"
+          $exe = "dist\Complotto24-Batch-Factory-LOCAL-v2.0.6.exe"
           if (-not (Test-Path $exe)) { throw "EXE non creato" }
           $bytes = [System.IO.File]::ReadAllBytes($exe)
           if ($bytes.Length -lt 2 -or $bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) { throw "PE Windows non valido" }
@@ -93,25 +94,25 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
           New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Desktop" | Out-Null
-          $p = Start-Process -FilePath "dist\Complotto24-Batch-Factory-LOCAL-v2.0.5.exe" -ArgumentList "--self-test" -Wait -PassThru
+          $p = Start-Process -FilePath "dist\Complotto24-Batch-Factory-LOCAL-v2.0.6.exe" -ArgumentList "--self-test" -Wait -PassThru
           if ($p.ExitCode -ne 0) { throw "Self-test EXE fallito: $($p.ExitCode)" }
 
       - name: Package
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path package | Out-Null
-          Copy-Item "dist\Complotto24-Batch-Factory-LOCAL-v2.0.5.exe" package\
+          Copy-Item "dist\Complotto24-Batch-Factory-LOCAL-v2.0.6.exe" package\
           Copy-Item "batch-factory-local\README.md" package\README.txt
-          $hash = (Get-FileHash "package\Complotto24-Batch-Factory-LOCAL-v2.0.5.exe" -Algorithm SHA256).Hash.ToLower()
-          "$hash  Complotto24-Batch-Factory-LOCAL-v2.0.5.exe" | Set-Content -Encoding ascii "package\SHA256.txt"
-          $sizeMB = [math]::Round((Get-Item "package\Complotto24-Batch-Factory-LOCAL-v2.0.5.exe").Length / 1MB, 2)
-          "BUILD PASS`nVersion: 2.0.5`nEXE size: $sizeMB MB`nSHA256: $hash`nDynamic Ollama model selector: ON`nExplicit refresh feedback: ON`nNon-blocking model refresh: ON`nC24 branded UI: ON`nStreaming Ollama: ON`nIncremental planning: ON`nEditorial mix firewall: ON`nEvent/source dedupe firewall: ON`nPartial-plan resume: ON`nVRAM unload before ComfyUI: ON" | Set-Content -Encoding utf8 "package\BUILD-INFO.txt"
+          $hash = (Get-FileHash "package\Complotto24-Batch-Factory-LOCAL-v2.0.6.exe" -Algorithm SHA256).Hash.ToLower()
+          "$hash  Complotto24-Batch-Factory-LOCAL-v2.0.6.exe" | Set-Content -Encoding ascii "package\SHA256.txt"
+          $sizeMB = [math]::Round((Get-Item "package\Complotto24-Batch-Factory-LOCAL-v2.0.6.exe").Length / 1MB, 2)
+          "BUILD PASS`nVersion: 2.0.6`nEXE size: $sizeMB MB`nSHA256: $hash`nDynamic Ollama model selector: ON`nAdaptive thinking compatibility: ON`nGPT-OSS think-level support: ON`nStructured JSON fallback: ON`nSingle-layer retry: ON`nModel-aware logging: ON`nExplicit refresh feedback: ON`nC24 branded UI: ON`nIncremental planning: ON`nEditorial mix firewall: ON`nEvent/source dedupe firewall: ON`nPartial-plan resume: ON`nVRAM unload before ComfyUI: ON" | Set-Content -Encoding utf8 "package\BUILD-INFO.txt"
           Get-Content package\BUILD-INFO.txt
 
       - name: Upload verified Windows build
         uses: actions/upload-artifact@v4
         with:
-          name: Complotto24-Batch-Factory-LOCAL-v2.0.5-Windows
+          name: Complotto24-Batch-Factory-LOCAL-v2.0.6-Windows
           path: package/*
           if-no-files-found: error
           retention-days: 30
