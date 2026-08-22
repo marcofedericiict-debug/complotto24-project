@@ -1,0 +1,56 @@
+name: Build Complotto24 Draft Review Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'wordpress-hotfix/c24-draft-review-gate/**'
+      - '.github/workflows/build-c24-draft-review-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-plugin:
+    name: Lint and package WordPress plugin
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: none
+          coverage: none
+
+      - name: PHP lint
+        run: php -l wordpress-hotfix/c24-draft-review-gate/c24-draft-review-gate.php
+
+      - name: Package plugin
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p package/c24-draft-review-gate
+          cp wordpress-hotfix/c24-draft-review-gate/c24-draft-review-gate.php package/c24-draft-review-gate/
+          cd package
+          zip -9 -r complotto24-draft-review-gate-v0.1.0.zip c24-draft-review-gate
+          sha256sum complotto24-draft-review-gate-v0.1.0.zip > SHA256.txt
+          unzip -t complotto24-draft-review-gate-v0.1.0.zip
+          cat SHA256.txt
+
+      - name: Upload verified plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: Complotto24-Draft-Review-Gate-v0.1.0
+          path: |
+            package/complotto24-draft-review-gate-v0.1.0.zip
+            package/SHA256.txt
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
