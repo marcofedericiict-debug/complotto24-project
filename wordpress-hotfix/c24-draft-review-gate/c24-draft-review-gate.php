@@ -218,7 +218,7 @@ function c24_drg_render_review_page(): void {
     echo '</tbody></table>';
     echo '<p><button type="submit" class="button button-primary">Pubblica selezionati</button></p>';
     echo '</form>';
-    echo '<script>document.getElementById("c24-select-all").addEventListener("change",function(){document.querySelectorAll(".c24-review-check").forEach(function(x){x.checked=event.target.checked;});});</script>';
+    echo '<script>document.getElementById("c24-select-all").addEventListener("change",function(e){document.querySelectorAll(".c24-review-check").forEach(function(x){x.checked=e.target.checked;});});</script>';
     echo '</div>';
     wp_reset_postdata();
 }
